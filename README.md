@@ -4,15 +4,16 @@ This project is a Python Realtime API application for a Furhat social robot. Fur
 
 The project is based on `Project_spec (3).pdf` and the HRI lab instructions for using Furhat with Python.
 
-## Project Location
+## Load The Project
 
-Open PowerShell and load the project folder:
+Clone the repository, then enter the project folder:
 
 ```powershell
-cd C:\Users\Lenovo\Documents\Codex\2026-05-05\files-mentioned-by-the-user-project\GymGuideSkill
+git clone https://github.com/yc9485/furhat.git
+cd furhat
 ```
 
-All commands below assume PowerShell is in this folder.
+If you already have the project locally, open PowerShell and `cd` into the folder that contains this README. All commands below assume PowerShell is in the project root.
 
 ## Files
 
@@ -37,17 +38,25 @@ The machine should have:
 If dependencies need to be installed again:
 
 ```powershell
-C:\Users\Lenovo\AppData\Local\Programs\Python\Python312\python.exe -m pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
+
+If `python` is not found on Windows, use the full path to your Python executable or reinstall Python with the "Add Python to PATH" option enabled.
 
 ## Start From Everything Closed
 
 ### 1. Open The Project
 
-Open PowerShell and run:
+Open PowerShell and enter the cloned project folder:
 
 ```powershell
-cd C:\Users\Lenovo\Documents\Codex\2026-05-05\files-mentioned-by-the-user-project\GymGuideSkill
+cd path\to\furhat
+```
+
+For example, if you cloned it into `Documents`:
+
+```powershell
+cd $env:USERPROFILE\Documents\furhat
 ```
 
 ### 2. Start The Furhat SDK Server
@@ -259,10 +268,10 @@ powershell -ExecutionPolicy Bypass -File .\calm_furhat.ps1
 
 The main app also disables microexpressions and makes Furhat look forward when it connects.
 
-If PowerShell cannot find the scripts, make sure you are in the project folder:
+If PowerShell cannot find the scripts, make sure you are in the project folder that contains this README:
 
 ```powershell
-cd C:\Users\Lenovo\Documents\Codex\2026-05-05\files-mentioned-by-the-user-project\GymGuideSkill
+cd path\to\furhat
 ```
 
 ## Safety Note
