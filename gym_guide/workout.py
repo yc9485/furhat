@@ -45,21 +45,21 @@ def create_workout(profile: GymProfile) -> WorkoutPlan:
 
     exercises: list[Exercise] = [
         Exercise(
-            "treadmill walk",
-            "5 minutes" if minutes < 30 else "8 minutes",
-            "Keep a pace where you can still speak in short sentences.",
+            "marching in place",
+            "2 minutes",
+            "Lift your knees to hip height and swing your arms naturally.",
             "Nice start. Let your breathing settle into a rhythm.",
             kind="cardio",
             set_count=1,
             rep_count=0,
-            duration_minutes=5 if minutes < 30 else 8,
+            duration_minutes=2,
             beginner_cues=(
-                "Stand tall, look forward, and avoid holding the rails unless you need balance.",
-                "Start slow for the first minute, then increase speed only if your breathing feels controlled.",
+                "Stand tall with feet hip-width apart and eyes forward.",
+                "Start at an easy pace for the first minute, then step a little livelier if breathing allows.",
             ),
             safety_cues=(
-                "Clip the safety key if the treadmill has one.",
-                "Step onto the side rails before changing settings if you feel unsteady.",
+                "Make sure you have clear space around you with no trip hazards.",
+                "Slow down or stop if you feel dizzy.",
             ),
         )
     ]
@@ -67,21 +67,21 @@ def create_workout(profile: GymProfile) -> WorkoutPlan:
     if "leg" in focus or "full" in focus or "strength" in goal or "muscle" in goal:
         exercises.append(
             Exercise(
-                "leg press",
-                "2 sets of 10" if experience == "beginner" else "3 sets of 10",
-                "Place your feet hip-width apart and stop before your knees lock.",
+                "bodyweight squat",
+                "2 sets of 10" if experience == "beginner" else "3 sets of 12",
+                "Stand feet shoulder-width apart, push hips back, and lower until thighs are parallel to the floor.",
                 "Strong and controlled. The slow return is where the useful work happens.",
                 kind="strength",
                 set_count=2 if experience == "beginner" else 3,
-                rep_count=10,
+                rep_count=10 if experience == "beginner" else 12,
                 beginner_cues=(
-                    "Set the seat so your knees start bent but not squeezed close to your chest.",
-                    "Push through the middle of your feet, not only your toes.",
-                    "Keep your knees pointing in the same direction as your toes.",
+                    "Keep your chest up and look slightly forward, not down at your feet.",
+                    "Push through your whole foot, not just your toes.",
+                    "Keep your knees tracking in the same direction as your toes.",
                 ),
                 safety_cues=(
-                    "Do not lock your knees at the top.",
-                    "Use a light weight for the first set.",
+                    "Hold a chair or wall lightly for balance if needed.",
+                    "Only go as deep as feels comfortable for your knees.",
                     "Stop if you feel sharp knee or back pain.",
                 ),
             )
@@ -91,39 +91,39 @@ def create_workout(profile: GymProfile) -> WorkoutPlan:
         exercises.extend(
             [
                 Exercise(
-                    "chest press machine",
-                    "3 sets of 12" if experience == "advanced" else "2 sets of 10",
-                    "Keep your shoulders down and push smoothly away from your chest.",
+                    "push-up",
+                    "3 sets of 10" if experience == "advanced" else "2 sets of 8",
+                    "Place hands slightly wider than shoulder-width, lower your chest to the floor, and push back up.",
                     "Good power. Keep the movement clean rather than rushing the reps.",
                     kind="strength",
                     set_count=3 if experience == "advanced" else 2,
-                    rep_count=12 if experience == "advanced" else 10,
+                    rep_count=10 if experience == "advanced" else 8,
                     beginner_cues=(
-                        "Adjust the seat so the handles are around chest height.",
-                        "Keep your back against the pad.",
-                        "Push forward smoothly and return slowly.",
+                        "Drop to your knees if the full push-up is too difficult.",
+                        "Keep your body in one straight line from head to hips.",
+                        "Lower slowly and push back up with control.",
                     ),
                     safety_cues=(
-                        "Do not shrug your shoulders up toward your ears.",
-                        "Do not let the weights slam down.",
+                        "Do not let your lower back sag toward the floor.",
+                        "Keep your elbows at roughly a 45-degree angle from your body.",
                     ),
                 ),
                 Exercise(
-                    "seated row",
+                    "bent-over row",
                     "3 sets of 12" if experience == "advanced" else "2 sets of 10",
-                    "Pull your elbows back and squeeze your shoulder blades gently.",
+                    "Hinge forward at the hips, hold a water bottle or filled bag in each hand, and pull your elbows back.",
                     "Great posture. Imagine pulling with your back, not just your hands.",
                     kind="strength",
                     set_count=3 if experience == "advanced" else 2,
                     rep_count=12 if experience == "advanced" else 10,
                     beginner_cues=(
-                        "Sit tall with your chest lifted.",
-                        "Pull your elbows back beside your body.",
-                        "Pause briefly, then return with control.",
+                        "Hinge at the hips until your torso is roughly parallel to the floor.",
+                        "Let your arms hang straight down before pulling.",
+                        "Pause briefly at the top, then lower with control.",
                     ),
                     safety_cues=(
-                        "Avoid leaning far backward to move the weight.",
-                        "Keep your wrists neutral and relaxed.",
+                        "Keep a neutral spine throughout — do not round your lower back.",
+                        "Start with a very light household item if your back feels stiff.",
                     ),
                 ),
             ]
@@ -132,21 +132,21 @@ def create_workout(profile: GymProfile) -> WorkoutPlan:
     if "endurance" in goal or "weight" in goal or "fitness" in goal or "cardio" in focus:
         exercises.append(
             Exercise(
-                "bike intervals",
+                "high knees intervals",
                 "6 minutes" if minutes < 30 else "10 minutes",
-                "Alternate one minute easy and one minute slightly harder.",
+                "Alternate one minute of easy marching and one minute of faster high knees.",
                 "You are building stamina now. Keep it challenging, not painful.",
                 kind="cardio",
                 set_count=1,
                 rep_count=0,
                 duration_minutes=6 if minutes < 30 else 10,
                 beginner_cues=(
-                    "Adjust the seat so your knee is slightly bent at the bottom of the pedal stroke.",
-                    "Keep your shoulders relaxed and your hands light on the handles.",
+                    "During the easy minute, march at a comfortable pace to recover.",
+                    "During the harder minute, drive your knees up toward your hips and pump your arms.",
                 ),
                 safety_cues=(
-                    "Do not make the resistance so heavy that your hips rock side to side.",
-                    "Slow down if you feel dizzy or breathless.",
+                    "Land softly on the balls of your feet to protect your knees.",
+                    "Slow down or switch to marching if you feel breathless or dizzy.",
                 ),
             )
         )
@@ -182,9 +182,9 @@ def create_workout(profile: GymProfile) -> WorkoutPlan:
 
     return WorkoutPlan(
         title=f"{minutes}-minute {profile.goal} routine",
-        warmup="Start with light movement and one easy practice set before using resistance.",
+        warmup="Start with two minutes of easy marching in place before the main exercises.",
         exercises=exercises[:max_exercises],
-        cooldown="Finish with slow walking and gentle stretching for two to three minutes.",
+        cooldown="Finish with slow marching and gentle stretching for two to three minutes.",
         safety_message=safety,
     )
 

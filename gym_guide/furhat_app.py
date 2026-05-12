@@ -5,32 +5,13 @@ from datetime import datetime
 import logging
 from pathlib import Path
 from time import sleep
+from typing import Any
 
 from furhat_realtime_api import FurhatClient
 
+from gym_guide.coaching_styles import COACHING_STYLES
+#from gym_guide.llm import session_start_guided_line
 from gym_guide.workout import GymProfile, create_workout, parse_minutes, parse_rating, parse_style, parse_yes
-
-
-COACHING_STYLES = {
-    "supportive": {
-        "intro": "I will use a calm and supportive coaching style.",
-        "plan": "I will keep the routine manageable and focus on confidence.",
-        "between": "Take your time. Controlled effort is enough.",
-        "finish": "You showed up and completed the structure. That matters.",
-    },
-    "energetic": {
-        "intro": "I will use a more energetic coaching style.",
-        "plan": "I will keep the routine clear and add a little push.",
-        "between": "Good pace. Keep the energy up for this next step.",
-        "finish": "Strong finish. You kept moving through the session.",
-    },
-    "neutral": {
-        "intro": "I will use a neutral instruction style.",
-        "plan": "I will give concise instructions for each exercise.",
-        "between": "Continue when ready.",
-        "finish": "The session is complete.",
-    },
-}
 
 
 def log_session(
@@ -38,7 +19,11 @@ def log_session(
     style: str,
     pre_motivation: int,
     post_motivation: int,
-    usefulness: bool,
+    usefulness: int,
+    comfort: int,
+    trust: int,
+    style_match: int,
+    perceived_style: str,
     completed: bool,
     stop_point: str,
 ) -> None:
@@ -51,6 +36,10 @@ def log_session(
         "pre_motivation": pre_motivation,
         "post_motivation": post_motivation,
         "usefulness": usefulness,
+        "comfort": comfort,
+        "trust": trust,
+        "style_match": style_match,
+        "perceived_style": perceived_style,
         "completed": completed,
         "stop_point": stop_point,
         **asdict(profile),
@@ -71,11 +60,30 @@ class FurhatGymGuide:
         condition: str = "ask",
         motion: bool = False,
         demo_timing: bool = True,
+        use_llm: bool = True,
     ) -> None:
         self.furhat = FurhatClient(host, api_key) if api_key else FurhatClient(host)
         self.condition = condition
         self.motion = motion
         self.demo_timing = demo_timing
+        self.use_llm = use_llm
+        self._pep_counters: dict[str, int] = {}
+
+    def _say_rotating_pep(self, style_lines: dict[str, Any], key: str) -> None:
+        raw = style_lines.get(key)
+        if not isinstance(raw, list) or not raw:
+            return
+        i = self._pep_counters.get(key, 0) % len(raw)
+        self._pep_counters[key] = self._pep_counters.get(key, 0) + 1
+        self.say(str(raw[i]))
+
+    @staticmethod
+    def _rep_pep_interval(style: str) -> int:
+        if style == "energetic":
+            return 2
+        if style == "supportive":
+            return 4
+        return 0
 
     def connect(self) -> None:
         self.furhat.set_logging_level(logging.INFO)
@@ -138,7 +146,7 @@ class FurhatGymGuide:
         for cue in exercise.safety_cues:
             self.say(cue)
 
-    def guide_cardio(self, exercise, style_lines: dict[str, str]) -> bool:
+    def guide_cardio(self, exercise, style_lines: dict[str, Any]) -> bool:
         minutes = max(1, exercise.duration_minutes)
         self.say(f"This is a timed exercise. We will do {minutes} minutes.")
         checkpoints = list(range(1, minutes + 1))
@@ -149,11 +157,12 @@ class FurhatGymGuide:
                 self.pause(60)
             remaining = minutes - minute
             if remaining > 0:
-                self.say(f"Status check. You have completed about {minute} minute. {remaining} minutes left.")
-                if "treadmill" in exercise.name.lower():
-                    distance = minute * 0.08
-                    self.say(f"At an easy walking pace, that is roughly {distance:.2f} kilometers walked.")
-                self.say(style_lines["between"])
+                left_word = "minute" if remaining == 1 else "minutes"
+                self.say(
+                    f"Status check. You have completed about {minute} minute. {remaining} {left_word} left."
+                )
+                self.say(str(style_lines["between"]))
+                self._say_rotating_pep(style_lines, "cardio_pep")
                 response = self.ask("Say continue to keep going, or stop to end this exercise.", "continue")
                 if "stop" in response.lower():
                     return False
@@ -161,7 +170,8 @@ class FurhatGymGuide:
                 self.say("Time is complete for this exercise.")
         return True
 
-    def guide_strength(self, exercise, style_lines: dict[str, str]) -> bool:
+    def guide_strength(self, exercise, style_lines: dict[str, Any], style: str) -> bool:
+        rep_every = self._rep_pep_interval(style)
         self.say(f"We will do {exercise.set_count} sets of {exercise.rep_count} reps.")
         for set_number in range(1, exercise.set_count + 1):
             self.say(f"Set {set_number}. Get into position.")
@@ -170,16 +180,19 @@ class FurhatGymGuide:
                 return False
             for rep in range(1, exercise.rep_count + 1):
                 self.say(f"{rep}")
+                if rep_every and rep % rep_every == 0 and rep < exercise.rep_count:
+                    self._say_rotating_pep(style_lines, "rep_pep")
                 self.pause(1.2 if not self.demo_timing else 0.35)
             self.say("Set complete. Rest and breathe.")
-            self.say(style_lines["between"])
+            self._say_rotating_pep(style_lines, "after_strength_set_pep")
+            self.say(str(style_lines["between"]))
             if set_number < exercise.set_count:
                 response = self.ask("Say ready for the next set, or stop to end this exercise.", "ready")
                 if "stop" in response.lower():
                     return False
         return True
 
-    def guide_hold(self, exercise, style_lines: dict[str, str]) -> bool:
+    def guide_hold(self, exercise, style_lines: dict[str, Any], style: str) -> bool:
         seconds = 20 if "20" in exercise.sets else 30
         if self.demo_timing:
             seconds = 6
@@ -187,21 +200,28 @@ class FurhatGymGuide:
             response = self.ask(f"Round {round_number}. Say ready when you are in plank position, or stop to skip.", "ready")
             if "stop" in response.lower():
                 return False
+            mid_trigger = max(1, seconds // 2)
+            mid_done = False
             for remaining in range(seconds, 0, -1):
                 if remaining in {seconds, 5, 3, 1}:
                     self.say(f"{remaining}")
+                if not mid_done and remaining <= mid_trigger:
+                    self._say_rotating_pep(style_lines, "hold_mid_pep")
+                    mid_done = True
                 self.pause(1)
             self.say("Round complete. Rest.")
-            self.say(style_lines["between"])
+            self._say_rotating_pep(style_lines, "after_hold_round_pep")
+            self.say(str(style_lines["between"]))
         return True
 
-    def guide_exercise(self, exercise, profile: GymProfile, style_lines: dict[str, str]) -> bool:
+    def guide_exercise(self, exercise, profile: GymProfile, style_lines: dict[str, Any], style: str) -> bool:
         self.cue_exercise(exercise, profile)
+        self._say_rotating_pep(style_lines, "exercise_opening_pep")
         if exercise.kind == "cardio":
             return self.guide_cardio(exercise, style_lines)
         if exercise.kind == "hold":
-            return self.guide_hold(exercise, style_lines)
-        return self.guide_strength(exercise, style_lines)
+            return self.guide_hold(exercise, style_lines, style)
+        return self.guide_strength(exercise, style_lines, style)
 
     def run(self) -> None:
         self.calm_face()
@@ -213,7 +233,8 @@ class FurhatGymGuide:
 
         style = self.choose_style()
         style_lines = COACHING_STYLES[style]
-        self.say(style_lines["intro"])
+        self.say(str(style_lines["intro"]))
+
         pre_motivation = parse_rating(
             self.ask("Before we start, how motivated do you feel from one to five?", "3")
         )
@@ -228,7 +249,7 @@ class FurhatGymGuide:
 
         plan = create_workout(profile)
         self.say(f"Great. I suggest a {plan.title}.")
-        self.say(style_lines["plan"])
+        self.say(str(style_lines["plan"]))
         self.say(plan.safety_message)
         self.say(plan.warmup)
         for index, exercise in enumerate(plan.exercises, start=1):
@@ -238,27 +259,47 @@ class FurhatGymGuide:
             self.say("Okay. You now have the plan. Remember to warm up and keep the movements controlled.")
             return
 
+        if self.use_llm:
+            names = [ex.name for ex in plan.exercises]
+            tailored = session_start_guided_line(style, profile, plan.title, names)
+            if tailored:
+                self.say(tailored)
+
         for exercise in plan.exercises:
-            completed_exercise = self.guide_exercise(exercise, profile, style_lines)
+            completed_exercise = self.guide_exercise(exercise, profile, style_lines, style)
             if not completed_exercise:
                 self.say("Session stopped. Drink some water and take care.")
                 post_motivation = parse_rating(
                     self.ask("Before you go, how motivated do you feel now from one to five?", str(pre_motivation))
                 )
-                log_session(profile, style, pre_motivation, post_motivation, False, False, exercise.name)
+                log_session(profile, style, pre_motivation, post_motivation, 0, 0, 0, 0, "", False, exercise.name)
                 return
 
         self.say(plan.cooldown)
-        self.say(style_lines["finish"])
+        self.say(str(style_lines["finish"]))
+
         post_motivation = parse_rating(
-            self.ask("After the session, how motivated do you feel from one to five?", str(pre_motivation))
+            self.ask("After the session, how motivated do you feel now from one to five?", str(pre_motivation))
         )
-        useful = parse_yes(self.ask("Did this robot coaching style feel useful?"))
-        log_session(profile, style, pre_motivation, post_motivation, useful, True, "")
-        if useful:
-            self.say("I am glad. You completed a structured session today.")
-        else:
-            self.say("Thanks for telling me. Next time I can adjust the routine to be easier, shorter, or more focused.")
+        usefulness = parse_rating(
+            self.ask("How useful was the workout plan I gave you, from one to five?", "3")
+        )
+        comfort = parse_rating(
+            self.ask("How comfortable did my coaching style feel, from one to five?", "3")
+        )
+        trust = parse_rating(
+            self.ask("How much did you trust my advice during the session, from one to five?", "3")
+        )
+        style_match = parse_rating(
+            self.ask("How well did my coaching style match what you would want from a trainer, from one to five?", "3")
+        )
+        perceived_style = self.ask(
+            "Last question. In your own words, how would you describe the style I used — calm, energetic, or neutral?",
+            style,
+        )
+
+        log_session(profile, style, pre_motivation, post_motivation, usefulness, comfort, trust, style_match, perceived_style, True, "")
+        self.say("Thank you for your answers. You completed a structured session today.")
 
 
 def main() -> None:
@@ -281,9 +322,21 @@ def main() -> None:
         action="store_true",
         help="Use real exercise timing. By default, timers are shortened for classroom demos.",
     )
+    parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="Disable the one-time Gemini line at the start of guided coaching.",
+    )
     args = parser.parse_args()
 
-    guide = FurhatGymGuide(args.host, args.api_key, args.condition, args.motion, not args.real_timing)
+    guide = FurhatGymGuide(
+        args.host,
+        args.api_key,
+        args.condition,
+        args.motion,
+        not args.real_timing,
+        use_llm=not args.no_llm,
+    )
     try:
         guide.connect()
         guide.run()
