@@ -1,7 +1,7 @@
 """Supportive coaching style: calm encouragement and motivational peptalk."""
 
 LINES: dict[str, str | list[str]] = {
-    "intro": "I will use a calm and supportive coaching style.",
+    "intro": "",
     "plan": "I will keep the routine manageable and focus on confidence.",
     "between": "Take your time. Controlled effort is enough.",
     "finish": "You showed up and completed the structure. That matters.",

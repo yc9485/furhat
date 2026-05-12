@@ -1,7 +1,7 @@
 """Energetic coaching style: hype and push to dig deeper."""
 
 LINES: dict[str, str | list[str]] = {
-    "intro": "I will use a more energetic coaching style.",
+    "intro": "",
     "plan": "I will keep the routine clear and add a little push.",
     "between": "Good pace. Keep the energy up for this next step.",
     "finish": "Strong finish. You kept moving through the session.",

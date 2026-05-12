@@ -1,7 +1,7 @@
 """Neutral coaching style: minimal extra motivation."""
 
 LINES: dict[str, str | list[str]] = {
-    "intro": "I will use a neutral instruction style.",
+    "intro": "",
     "plan": "I will give concise instructions for each exercise.",
     "between": "Continue when ready.",
     "finish": "The session is complete.",
