@@ -1,7 +1,7 @@
 param(
     [string]$HostAddress = "127.0.0.1",
     [string]$ApiKey = "",
-    [ValidateSet("ask", "supportive", "energetic", "neutral")]
+    [ValidateSet("ask", "supportive", "neutral")]
     [string]$Condition = "ask",
     [switch]$Motion,
     [switch]$RealTiming

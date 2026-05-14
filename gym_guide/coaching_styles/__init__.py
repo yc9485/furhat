@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from . import energetic, neutral, supportive
+from . import neutral, supportive
 
 COACHING_STYLES: dict[str, dict[str, str | list[str]]] = {
     "supportive": supportive.LINES,
-    "energetic": energetic.LINES,
     "neutral": neutral.LINES,
 }
 

@@ -175,9 +175,9 @@ def create_workout(profile: GymProfile) -> WorkoutPlan:
 
     max_exercises = 3 if minutes < 25 else 4 if minutes < 45 else 5
     safety = (
-        "Because you mentioned pain or injury, use light resistance and ask gym staff before doing anything that stresses that area."
+        "Because you mentioned pain or injury, keep movements gentle and stop immediately if anything stresses that area."
         if profile.has_pain_or_injury
-        else "Use a comfortable weight, keep control, and stop if anything feels sharp or painful."
+        else "Keep movements controlled and stop if anything feels sharp or painful."
     )
 
     return WorkoutPlan(
@@ -218,8 +218,6 @@ def parse_rating(text: str, default: int = 3) -> int:
 
 def parse_style(text: str, default: str = "supportive") -> str:
     lowered = text.lower()
-    if any(word in lowered for word in ["energy", "energetic", "push", "intense", "hype"]):
-        return "energetic"
     if any(word in lowered for word in ["calm", "support", "gentle", "quiet", "relaxed"]):
         return "supportive"
     if "neutral" in lowered:

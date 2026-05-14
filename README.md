@@ -140,10 +140,6 @@ powershell -ExecutionPolicy Bypass -File .\run_furhat.ps1 -Condition supportive
 ```
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\run_furhat.ps1 -Condition energetic
-```
-
-```powershell
 powershell -ExecutionPolicy Bypass -File .\run_furhat.ps1 -Condition neutral
 ```
 

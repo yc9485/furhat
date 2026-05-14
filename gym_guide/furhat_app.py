@@ -14,6 +14,7 @@ from gym_guide.workout import GymProfile, create_workout, parse_minutes, parse_r
 
 
 def log_session(
+    session_timestamp: str,
     profile: GymProfile,
     style: str,
     pre_motivation: int,
@@ -22,7 +23,6 @@ def log_session(
     comfort: int,
     trust: int,
     style_match: int,
-    perceived_style: str,
     completed: bool,
     stop_point: str,
 ) -> None:
@@ -30,7 +30,7 @@ def log_session(
     data_dir.mkdir(exist_ok=True)
     path = data_dir / "sessions.csv"
     row = {
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "timestamp": session_timestamp,
         "style": style,
         "pre_motivation": pre_motivation,
         "post_motivation": post_motivation,
@@ -38,10 +38,36 @@ def log_session(
         "comfort": comfort,
         "trust": trust,
         "style_match": style_match,
-        "perceived_style": perceived_style,
         "completed": completed,
         "stop_point": stop_point,
         **asdict(profile),
+    }
+    write_header = not path.exists()
+    with path.open("a", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=row.keys())
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def log_exercise_rating(
+    session_timestamp: str,
+    starting_style: str,
+    exercise_index: int,
+    exercise_name: str,
+    exercise_style: str,
+    rating: int,
+) -> None:
+    data_dir = Path("data")
+    data_dir.mkdir(exist_ok=True)
+    path = data_dir / "exercise_ratings.csv"
+    row = {
+        "session_timestamp": session_timestamp,
+        "starting_style": starting_style,
+        "exercise_index": exercise_index,
+        "exercise_name": exercise_name,
+        "exercise_style": exercise_style,
+        "rating": rating,
     }
     write_header = not path.exists()
     with path.open("a", newline="", encoding="utf-8") as handle:
@@ -76,8 +102,6 @@ class FurhatGymGuide:
 
     @staticmethod
     def _rep_pep_interval(style: str) -> int:
-        if style == "energetic":
-            return 2
         if style == "supportive":
             return 4
         return 0
@@ -125,7 +149,7 @@ class FurhatGymGuide:
         if self.condition in COACHING_STYLES:
             return self.condition
         response = self.ask(
-            "For this demo, should I coach in a calm supportive style, or a more energetic style?",
+            "For this demo, should I coach in a calm supportive style, or a neutral style?",
             "supportive",
         )
         return parse_style(response)
@@ -133,13 +157,9 @@ class FurhatGymGuide:
     def pause(self, seconds: float) -> None:
         sleep(seconds)
 
-    def cue_exercise(self, exercise, profile: GymProfile) -> None:
+    def cue_exercise(self, exercise) -> None:
         self.say(f"Now we will do {exercise.name}.")
         self.say(exercise.instruction)
-        if profile.experience.lower() == "beginner":
-            self.say("I will give you extra beginner cues before you start.")
-            for cue in exercise.beginner_cues:
-                self.say(cue)
         for cue in exercise.safety_cues:
             self.say(cue)
 
@@ -212,7 +232,7 @@ class FurhatGymGuide:
         return True
 
     def guide_exercise(self, exercise, profile: GymProfile, style_lines: dict[str, Any], style: str) -> bool:
-        self.cue_exercise(exercise, profile)
+        self.cue_exercise(exercise)
         self._say_rotating_pep(style_lines, "exercise_opening_pep")
         if exercise.kind == "cardio":
             return self.guide_cardio(exercise, style_lines)
@@ -223,7 +243,7 @@ class FurhatGymGuide:
     def run(self) -> None:
         self.calm_face()
         self.gesture("Smile")
-        self.say("Hi, I am your gym guide. I can suggest a simple workout and compare how different robot coaching styles feel.")
+        self.say("Hi, I am your gym guide. I can guide you through a simple home workout.")
         if not parse_yes(self.ask("Do you want to start?")):
             self.say("No problem. I will be here when you want a routine.")
             return
@@ -257,15 +277,28 @@ class FurhatGymGuide:
             self.say("Okay. You now have the plan. Remember to warm up and keep the movements controlled.")
             return
 
-        for exercise in plan.exercises:
-            completed_exercise = self.guide_exercise(exercise, profile, style_lines, style)
+        session_ts = datetime.now().isoformat(timespec="seconds")
+        other_style = "neutral" if style == "supportive" else "supportive"
+        alternating_styles = [style, other_style]
+
+        for i, exercise in enumerate(plan.exercises):
+            exercise_style = alternating_styles[i % 2]
+            exercise_style_lines = COACHING_STYLES[exercise_style]
+            completed_exercise = self.guide_exercise(exercise, profile, exercise_style_lines, exercise_style)
             if not completed_exercise:
                 self.say("Session stopped. Drink some water and take care.")
                 post_motivation = parse_rating(
                     self.ask("Before you go, how motivated do you feel now from one to five?", str(pre_motivation))
                 )
-                log_session(profile, style, pre_motivation, post_motivation, 0, 0, 0, 0, "", False, exercise.name)
+                log_session(session_ts, profile, style, pre_motivation, post_motivation, 0, 0, 0, 0, False, exercise.name)
                 return
+            exercise_rating = parse_rating(
+                self.ask(
+                    "How did you experience the coaching during this exercise? Please say a number from one to five, with one being very negative and five being very positive.",
+                    "3",
+                )
+            )
+            log_exercise_rating(session_ts, style, i + 1, exercise.name, exercise_style, exercise_rating)
 
         self.say(plan.cooldown)
         self.say(str(style_lines["finish"]))
@@ -285,12 +318,7 @@ class FurhatGymGuide:
         style_match = parse_rating(
             self.ask("How well did my coaching style match what you would want from a trainer, from one to five?", "3")
         )
-        perceived_style = self.ask(
-            "Last question. In your own words, how would you describe the style I used — calm, energetic, or neutral?",
-            style,
-        )
-
-        log_session(profile, style, pre_motivation, post_motivation, usefulness, comfort, trust, style_match, perceived_style, True, "")
+        log_session(session_ts, profile, style, pre_motivation, post_motivation, usefulness, comfort, trust, style_match, True, "")
         self.say("Thank you for your answers. You completed a structured session today.")
 
 
@@ -301,7 +329,7 @@ def main() -> None:
     parser.add_argument(
         "--condition",
         default="ask",
-        choices=["ask", "supportive", "energetic", "neutral"],
+        choices=["ask", "supportive", "neutral"],
         help="Coaching style condition for the HRI study prototype",
     )
     parser.add_argument(

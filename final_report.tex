@@ -27,7 +27,7 @@
 
 \maketitle
 \begin{abstract}
-This project investigated how a Furhat social robot can support gym-goers by providing personalised workout guidance and motivational coaching. Rather than treating the robot as a fitness expert, we framed the project as a human-robot interaction (HRI) study of robot coaching style in a health-related activity. We implemented an autonomous Python Realtime API system in which Furhat asks about the user's goal, experience, time availability, focus area, and injury status, then guides the user through cardio, lifting, and hold exercises with timed check-ins, rep counting, beginner posture cues, and safety reminders. The final prototype supports three coaching styles: supportive, energetic, and neutral. It logs pre- and post-interaction motivation ratings, perceived usefulness, completion, and profile information. The main HRI contribution is a deployable prototype and study protocol for examining whether robot coaching style affects short-term motivation and perceived comfort in beginner gym guidance.
+This project investigated how a Furhat social robot can support gym-goers by providing personalised workout guidance and motivational coaching. Rather than treating the robot as a fitness expert, we framed the project as a human-robot interaction (HRI) study of robot coaching style in a health-related activity. We implemented an autonomous Python Realtime API system in which Furhat asks about the user's goal, experience, time availability, focus area, and injury status, then guides the user through cardio, lifting, and hold exercises with timed check-ins, rep counting, beginner posture cues, and safety reminders. The final prototype supports two coaching styles: supportive and neutral. It logs pre- and post-interaction motivation ratings, perceived usefulness, completion, and profile information. The main HRI contribution is a deployable prototype and study protocol for examining whether robot coaching style affects short-term motivation and perceived comfort in beginner gym guidance.
 \end{abstract}
 
 \section*{Schematic summary}
@@ -37,7 +37,7 @@ This project investigated how a Furhat social robot can support gym-goers by pro
     \item \textbf{Research questions:} RQ1: How does robot coaching style affect users' short-term motivation? RQ2: Which style is perceived as more useful and comfortable for beginner gym guidance?
     \item \textbf{Robot platform:} Furhat social robot / Virtual Furhat using the Python Realtime API.
     \item \textbf{UCD approach:} The design was informed by informal discussion of beginner uncertainty in gyms and iterative prototype testing. Key needs were simple instructions, injury-aware safety prompts, and non-overwhelming coaching.
-    \item \textbf{Independent and dependent variables:} IV: coaching style with supportive, energetic, and neutral conditions. DVs: pre/post motivation rating, perceived usefulness, completion, and qualitative comments.
+    \item \textbf{Independent and dependent variables:} IV: coaching style with supportive and neutral conditions. DVs: pre/post motivation rating, perceived usefulness, completion, and qualitative comments.
     \item \textbf{Experimental design:} Proposed in-person, between-subjects study using the autonomous Furhat prototype. Participants are assigned one coaching style. Replace with actual participant count after data collection.
     \item \textbf{Measures and analysis:} Quantitative measures are 1--5 motivation ratings, usefulness, and completion logs. Qualitative measures are short post-session comments coded for comfort, clarity, motivation, and awkwardness.
     \item \textbf{Main results:} Implementation testing confirmed that the robot can run the full interaction autonomously. Formal participant results should be inserted after running the study.
@@ -47,12 +47,12 @@ This project investigated how a Furhat social robot can support gym-goers by pro
 \section{Introduction}
 Many gym-goers, especially beginners, experience uncertainty when choosing exercises, setting up machines, or deciding how hard to train. This uncertainty can reduce motivation and make a gym session feel less approachable. Socially assistive robots are relevant in this context because they can provide interactive guidance, encouragement, and a physically embodied social presence during activity. Prior work has argued that robots can motivate engagement in repetitive or health-related tasks, but that the way the robot expresses its social role matters \cite{andrist2015look,sussenbach2014robot}.
 
-The goal of this project was to create a Furhat-based gym companion and to evaluate it from an HRI perspective. We therefore did not focus on producing expert-level exercise prescriptions. Instead, the central design question was how a social robot should coach a user: calmly and supportively, energetically, or neutrally. This choice is grounded in prior work on robot personality and health-care HRI, where robot behaviour style can shape comfort, trust, and user response \cite{esterwood2021systematic}.
+The goal of this project was to create a Furhat-based gym companion and to evaluate it from an HRI perspective. We therefore did not focus on producing expert-level exercise prescriptions. Instead, the central design question was how a social robot should coach a user: calmly and supportively, or neutrally. This choice is grounded in prior work on robot personality and health-care HRI, where robot behaviour style can shape comfort, trust, and user response \cite{esterwood2021systematic}.
 
 Our research questions were:
 \begin{itemize}
     \item RQ1: How does a social robot's coaching style affect users' self-reported motivation during a short gym-guidance interaction?
-    \item RQ2: Do users perceive supportive, energetic, and neutral robot coaching styles differently in terms of usefulness and comfort?
+    \item RQ2: Do users perceive supportive and neutral robot coaching styles differently in terms of usefulness and comfort?
 \end{itemize}
 
 \subsection{Contribution statement}
@@ -63,19 +63,19 @@ The interaction scenario is a short gym-coaching session for users who want help
 
 The design deliberately makes the robot a companion rather than an authority. This is important ethically because the robot is not a medical or professional training system. It gives general beginner-safe instructions, recommends light resistance, and tells users to stop if they feel sharp pain. For beginner users, the robot gives more detailed posture cues. For example, during leg press it reminds the user to avoid locking the knees and to keep knees aligned with toes; during chest press it reminds the user to keep the back against the pad; during treadmill use it gives balance and pace reminders.
 
-The final system supports three coaching styles. The \emph{supportive} condition uses calm, confidence-focused language. The \emph{energetic} condition uses more push-oriented motivational statements. The \emph{neutral} condition provides concise instructions with minimal social encouragement. This manipulation follows HRI work showing that robot personality-like behaviours can affect user motivation and engagement \cite{andrist2015look}. It also follows fitness-companion work suggesting that motivation in exercise is interactional and can be shaped through timing, acknowledgement, and feedback \cite{sussenbach2014robot}.
+The final system supports two coaching styles. The \emph{supportive} condition uses calm, confidence-focused language. The \emph{neutral} condition provides concise instructions with minimal social encouragement. This manipulation follows HRI work showing that robot personality-like behaviours can affect user motivation and engagement \cite{andrist2015look}. It also follows fitness-companion work suggesting that motivation in exercise is interactional and can be shaped through timing, acknowledgement, and feedback \cite{sussenbach2014robot}.
 
 The implemented guidance behaviour is exercise-specific. For cardio exercises such as treadmill walking or bike intervals, Furhat announces the total duration, gives progress check-ins, reports minutes remaining, and estimates distance for treadmill walking in the demo mode. For lifting exercises, Furhat asks the user to get into position, counts reps out loud for each set, and reminds the user to rest. For plank or hold exercises, Furhat runs timed countdown rounds. Timers are shortened by default for classroom demonstration, but the system also supports real timing.
 
 \section{User Study}
 The proposed study evaluates whether coaching style changes users' short-term motivation and perceived appropriateness of the robot. The study is intended to be conducted in person with Virtual Furhat or a physical Furhat, depending on availability. The robot runs autonomously using the Python Realtime API, not Wizard-of-Oz control, although an experimenter remains nearby for safety and technical support.
 
-Participants are assigned to one of three conditions: supportive, energetic, or neutral. Each participant receives the same basic interaction structure. Before the workout plan, the robot asks for a motivation rating from 1 to 5. After the guided session, it asks again for motivation and whether the robot coaching style was useful. The system logs these responses automatically to a CSV file. A short post-session questionnaire or interview should then ask: (1) how comfortable the coaching style felt, (2) whether the robot was motivating, (3) what felt awkward or unnatural, and (4) whether the participant would prefer a different style in a real gym.
+Participants are assigned to one of two conditions: supportive or neutral. Each participant receives the same basic interaction structure. Before the workout plan, the robot asks for a motivation rating from 1 to 5. After the guided session, it asks again for motivation and whether the robot coaching style was useful. The system logs these responses automatically to a CSV file. A short post-session questionnaire or interview should then ask: (1) how comfortable the coaching style felt, (2) whether the robot was motivating, (3) what felt awkward or unnatural, and (4) whether the participant would prefer a different style in a real gym.
 
 At the time of writing, the software includes one developer pilot log used for implementation validation. This pilot should not be treated as formal participant evidence. For the final submission, the group should replace this paragraph with the actual number of recruited participants, their assignment to conditions, and the setting in which the study was run.
 
 \section{Results}
-The implementation result is a working autonomous Furhat prototype with three coaching conditions, beginner-aware exercise instructions, live exercise guidance, and automatic logging. A developer pilot confirmed that the system can collect the intended variables: coaching style, pre-motivation, post-motivation, usefulness, completion, stop point, and user profile. Table~\ref{tab:loggedvars} summarises the logged measures.
+The implementation result is a working autonomous Furhat prototype with two coaching conditions, beginner-aware exercise instructions, live exercise guidance, and automatic logging. A developer pilot confirmed that the system can collect the intended variables: coaching style, pre-motivation, post-motivation, usefulness, completion, stop point, and user profile. Table~\ref{tab:loggedvars} summarises the logged measures.
 
 \begin{table}[h]
 \centering
@@ -85,7 +85,7 @@ The implementation result is a working autonomous Furhat prototype with three co
 \hline
 \textbf{Measure} & \textbf{Purpose} \\
 \hline
-Coaching style & Independent variable: supportive, energetic, or neutral \\
+Coaching style & Independent variable: supportive or neutral \\
 Pre-motivation & Baseline self-reported motivation, 1--5 \\
 Post-motivation & Motivation after robot coaching, 1--5 \\
 Usefulness & Whether the participant found the robot coaching useful \\
@@ -103,7 +103,7 @@ Formal results should be inserted after the user study. The intended quantitativ
 and compare the mean change across coaching-style conditions. If the sample is small, descriptive statistics and plots are more appropriate than over-interpreting significance tests. Qualitative comments should be coded into themes such as clarity, comfort, motivational impact, safety, and simulator awkwardness.
 
 \section{Discussion}
-The prototype demonstrates that the gym-guide scenario can be reframed as an HRI question about robot coaching style rather than an exercise-recommendation problem. This is important because the robot's social behaviour is likely to be more relevant to HRI evaluation than the exact workout content. The supportive, energetic, and neutral conditions create a simple but meaningful manipulation of robot personality-like behaviour. Prior work suggests that such behavioural style can affect user motivation and comfort \cite{andrist2015look,esterwood2021systematic}.
+The prototype demonstrates that the gym-guide scenario can be reframed as an HRI question about robot coaching style rather than an exercise-recommendation problem. This is important because the robot's social behaviour is likely to be more relevant to HRI evaluation than the exact workout content. The supportive and neutral conditions create a simple but meaningful manipulation of robot personality-like behaviour. Prior work suggests that such behavioural style can affect user motivation and comfort \cite{andrist2015look,esterwood2021systematic}.
 
 The most important design trade-off was between expressiveness and stability. In early testing, the Virtual Furhat face sometimes produced distracting microexpressions and eyebrow movements. To avoid making the robot appear unstable or unsettling, the final system disables gestures by default, resets the face on connection, turns off microexpressions, and fixes attention forward. This illustrates a broader HRI point: more expressiveness is not always better, especially when the simulator or embodiment makes expressions appear unnatural.
 
@@ -112,7 +112,7 @@ Several ethical issues are relevant. First, exercise guidance can affect physica
 The main limitation is that the system has not yet been evaluated with enough participants to answer the research questions empirically. The current report therefore describes a completed prototype and a ready study protocol. After data collection, the results section should be updated with the actual participant count, descriptive statistics, plots, and qualitative themes.
 
 \section{Conclusion}
-We implemented an autonomous Furhat gym-coach prototype that guides users through personalised beginner-friendly workouts while varying robot coaching style. The project contributes a concrete HRI study platform for examining how supportive, energetic, and neutral robot behaviours affect short-term motivation and perceived usefulness in a health-related activity. The work shows that even a simple workout recommender can become an HRI-relevant system when the focus is placed on embodiment, coaching style, safety, user comfort, and measurable interaction outcomes. The next step is to run the planned user study and analyse whether coaching style changes motivation and comfort.
+We implemented an autonomous Furhat gym-coach prototype that guides users through personalised beginner-friendly workouts while varying robot coaching style. The project contributes a concrete HRI study platform for examining how supportive and neutral robot behaviours affect short-term motivation and perceived usefulness in a health-related activity. The work shows that even a simple workout recommender can become an HRI-relevant system when the focus is placed on embodiment, coaching style, safety, user comfort, and measurable interaction outcomes. The next step is to run the planned user study and analyse whether coaching style changes motivation and comfort.
 
 \bibliography{references}
 
