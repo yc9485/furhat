@@ -270,8 +270,8 @@ class FurhatGymGuide:
         self.say(str(style_lines["plan"]))
         self.say(plan.safety_message)
         self.say(plan.warmup)
-        for index, exercise in enumerate(plan.exercises, start=1):
-            self.say(f"Exercise {index}: {exercise.name}. {exercise.sets}. {exercise.instruction}")
+        # for index, exercise in enumerate(plan.exercises, start=1):
+        #     self.say(f"Exercise {index}: {exercise.name}. {exercise.sets}. {exercise.instruction}")
 
         if not parse_yes(self.ask("Would you like me to guide you through the session now?")):
             self.say("Okay. You now have the plan. Remember to warm up and keep the movements controlled.")
