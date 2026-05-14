@@ -10,7 +10,6 @@ from typing import Any
 from furhat_realtime_api import FurhatClient
 
 from gym_guide.coaching_styles import COACHING_STYLES
-#from gym_guide.llm import session_start_guided_line
 from gym_guide.workout import GymProfile, create_workout, parse_minutes, parse_rating, parse_style, parse_yes
 
 
@@ -60,13 +59,11 @@ class FurhatGymGuide:
         condition: str = "ask",
         motion: bool = False,
         demo_timing: bool = True,
-        use_llm: bool = True,
     ) -> None:
         self.furhat = FurhatClient(host, api_key) if api_key else FurhatClient(host)
         self.condition = condition
         self.motion = motion
         self.demo_timing = demo_timing
-        self.use_llm = use_llm
         self._pep_counters: dict[str, int] = {}
 
     def _say_rotating_pep(self, style_lines: dict[str, Any], key: str) -> None:
@@ -233,7 +230,8 @@ class FurhatGymGuide:
 
         style = self.choose_style()
         style_lines = COACHING_STYLES[style]
-        self.say(str(style_lines["intro"]))
+        if style_lines.get("intro"):
+            self.say(str(style_lines["intro"]))
 
         pre_motivation = parse_rating(
             self.ask("Before we start, how motivated do you feel from one to five?", "3")
@@ -258,12 +256,6 @@ class FurhatGymGuide:
         if not parse_yes(self.ask("Would you like me to guide you through the session now?")):
             self.say("Okay. You now have the plan. Remember to warm up and keep the movements controlled.")
             return
-
-        if self.use_llm:
-            names = [ex.name for ex in plan.exercises]
-            tailored = session_start_guided_line(style, profile, plan.title, names)
-            if tailored:
-                self.say(tailored)
 
         for exercise in plan.exercises:
             completed_exercise = self.guide_exercise(exercise, profile, style_lines, style)
@@ -322,11 +314,6 @@ def main() -> None:
         action="store_true",
         help="Use real exercise timing. By default, timers are shortened for classroom demos.",
     )
-    parser.add_argument(
-        "--no-llm",
-        action="store_true",
-        help="Disable the one-time Gemini line at the start of guided coaching.",
-    )
     args = parser.parse_args()
 
     guide = FurhatGymGuide(
@@ -335,7 +322,6 @@ def main() -> None:
         args.condition,
         args.motion,
         not args.real_timing,
-        use_llm=not args.no_llm,
     )
     try:
         guide.connect()

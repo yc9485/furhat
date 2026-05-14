@@ -1,4 +1,4 @@
-$SdkRoot = "$env:USERPROFILE\.furhat\launcher\SDK\2.9.2"
+$SdkRoot = "$env:USERPROFILE\.furhat\launcher\SDK\2.9.1"
 $BundledJava = "$env:USERPROFILE\.furhat\launcher\JDK\jdk8u265-b01"
 
 if (-not (Test-Path "$BundledJava\bin\java.exe")) {
