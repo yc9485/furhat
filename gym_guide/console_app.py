@@ -26,10 +26,10 @@ def main() -> None:
 
     plan = create_workout(profile)
     # say(f"Great. I suggest a {plan.title}.")
-    # say(plan.safety_message)
-    # say(plan.warmup)
-    # for index, exercise in enumerate(plan.exercises, start=1):
-    #     say(f"Exercise {index}: {exercise.name}. {exercise.sets}. {exercise.instruction}")
+    say(plan.safety_message)
+    say(plan.warmup)
+    for index, exercise in enumerate(plan.exercises, start=1):
+        say(f"Exercise {index}: {exercise.name}. {exercise.sets}. {exercise.instruction}")
 
     if not parse_yes(ask("Would you like me to guide you through the session now?")):
         say("Okay. Remember to warm up and keep the movements controlled.")

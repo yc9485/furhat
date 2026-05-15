@@ -52,6 +52,7 @@ def log_session(
 
 def log_exercise_rating(
     session_timestamp: str,
+    profile: GymProfile,
     starting_style: str,
     exercise_index: int,
     exercise_name: str,
@@ -60,7 +61,7 @@ def log_exercise_rating(
 ) -> None:
     data_dir = Path("data")
     data_dir.mkdir(exist_ok=True)
-    path = data_dir / "exercise_ratings.csv"
+    path = data_dir / "sers.csv"
     row = {
         "session_timestamp": session_timestamp,
         "starting_style": starting_style,
@@ -68,6 +69,7 @@ def log_exercise_rating(
         "exercise_name": exercise_name,
         "exercise_style": exercise_style,
         "rating": rating,
+        **asdict(profile),
     }
     write_header = not path.exists()
     with path.open("a", newline="", encoding="utf-8") as handle:
@@ -165,7 +167,7 @@ class FurhatGymGuide:
 
     def guide_cardio(self, exercise, style_lines: dict[str, Any]) -> bool:
         minutes = max(1, exercise.duration_minutes)
-        self.say(f"This is a timed exercise. We will do {minutes} minutes.")
+        self.say(f"This is a timed exercise. We will do {minutes} minutes. Please start now")
         checkpoints = list(range(1, minutes + 1))
         for minute in checkpoints:
             if self.demo_timing:
@@ -180,9 +182,9 @@ class FurhatGymGuide:
                 )
                 self.say(str(style_lines["between"]))
                 self._say_rotating_pep(style_lines, "cardio_pep")
-                response = self.ask("Say continue to keep going, or stop to end this exercise.", "continue")
-                if "stop" in response.lower():
-                    return False
+                # response = self.ask("Say continue to keep going, or stop to end this exercise.", "continue")
+                # if "stop" in response.lower():
+                #     return False
             else:
                 self.say("Time is complete for this exercise.")
         return True
@@ -278,8 +280,11 @@ class FurhatGymGuide:
             return
 
         session_ts = datetime.now().isoformat(timespec="seconds")
-        other_style = "neutral" if style == "supportive" else "supportive"
-        alternating_styles = [style, other_style]
+        
+        if style == "neutral":
+            alternating_styles = ["neutral", "supportive"]
+        else:
+            alternating_styles = ["supportive", "neutral"]
 
         for i, exercise in enumerate(plan.exercises):
             exercise_style = alternating_styles[i % 2]
@@ -294,11 +299,10 @@ class FurhatGymGuide:
                 return
             exercise_rating = parse_rating(
                 self.ask(
-                    "How did you experience the coaching during this exercise? Please say a number from one to five, with one being very negative and five being very positive.",
-                    "3",
+                    "How did you experience the coaching during this exercise on a 5-point scale, with 1 being very negative, and 5 being very positive?", "3"
                 )
             )
-            log_exercise_rating(session_ts, style, i + 1, exercise.name, exercise_style, exercise_rating)
+            log_exercise_rating(session_ts, profile, style, i + 1, exercise.name, exercise_style, exercise_rating)
 
         self.say(plan.cooldown)
         self.say(str(style_lines["finish"]))

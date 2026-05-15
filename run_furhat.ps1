@@ -14,6 +14,7 @@ if (-not (Test-Path $Python)) {
 
 if ($ApiKey) {
     $Args = @("-m", "gym_guide.furhat_app", "--host", $HostAddress, "--api-key", $ApiKey, "--condition", $Condition)
+    $Args += "--real-timing"
     if ($Motion) {
         $Args += "--motion"
     }
@@ -23,6 +24,7 @@ if ($ApiKey) {
     & $Python @Args
 } else {
     $Args = @("-m", "gym_guide.furhat_app", "--host", $HostAddress, "--condition", $Condition)
+    $Args += "--real-timing"
     if ($Motion) {
         $Args += "--motion"
     }
