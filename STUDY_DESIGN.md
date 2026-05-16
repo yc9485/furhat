@@ -8,17 +8,15 @@ The instructor feedback suggests that higher grades depend on a clear HRI contri
 
 RQ1: How does a social robot's coaching style affect users' motivation during a short gym-planning interaction?
 
-RQ2: Do users perceive a supportive robot coach as more appropriate, trustworthy, or comfortable than an energetic robot coach?
+RQ2: Do users perceive a supportive robot coach as more appropriate, trustworthy, or comfortable than a neutral robot coach?
 
 RQ3: Does a user's self-reported motivation change after receiving a personalized workout plan from a social robot?
 
 ## Suggested Hypotheses
 
-H1: A supportive robot coaching style will be rated as more comfortable than an energetic style for beginner gym-goers.
+H1: A supportive robot coaching style will be rated as more comfortable than a neutral style for beginner gym-goers.
 
-H2: An energetic robot coaching style will increase short-term motivation more than a neutral instruction style.
-
-H3: Users will report higher usefulness when the robot's style matches their preferred coaching style.
+H2: Users will report higher usefulness when the robot's style matches their preferred coaching style.
 
 ## Literature Grounding
 
@@ -32,20 +30,15 @@ Relevant starting points:
 
 ## Study Conditions
 
-The current app supports three conditions:
+The current app supports two conditions:
 
 - `supportive`: calm, confidence-focused coaching.
-- `energetic`: higher-energy, push-oriented coaching.
 - `neutral`: concise instruction with minimal motivational framing.
 
 Run a fixed condition:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\run_furhat.ps1 -Condition supportive
-```
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\run_furhat.ps1 -Condition energetic
 ```
 
 ```powershell
